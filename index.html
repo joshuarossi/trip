@@ -92,7 +92,7 @@
 <div class="list" id="list"></div>
 
 <div class="foot">
-  <span>Refs: EK MC2QCS · Aegean 9TRXQN · Qatar 9UFOUK · EK213 N6FHBW · all times local · live data: adsb.lol</span>
+  <span>All times local · booking references are in your email, not on this page · live data: adsb.lol</span>
   <button class="reset" id="reset">Reset statuses</button>
 </div>
 
@@ -113,15 +113,15 @@ const CITIES = {
 
 const ITEMS = [
  {id:'stregis', type:'task', label:'St Regis: extra night of Jul 12', date:'Jul 12', day:12, detail:'Reserved at the same rate, reservations merged, your card on the new night. Done. Leave the room ~12:15 on the 13th.', status:'booked'},
- {id:'ek143', type:'flight', fn:'EK143', cs:['UAE143'], label:'EK143 · Dubai → Madrid', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'Nonstop 14:30 → 20:20 · A350 · ref MC2QCS · $789 paid. Dear Hotel ~21:30; Missy lands 19:15, mom & Rachel 06:50 next morning.', status:'booked', fr24:'ek143'},
+ {id:'ek143', type:'flight', fn:'EK143', cs:['UAE143'], label:'EK143 · Dubai → Madrid', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'Nonstop 14:30 → 20:20 · A350 · paid ✓. Dear Hotel ~21:30; Missy lands 19:15, mom & Rachel 06:50 next morning.', status:'booked', fr24:'ek143'},
  {id:'train', type:'train', label:'Train · Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5h, €30–60. Buy once in Madrid. Family flies 08:25; converge at the Moxy ~13:00.', status:'locked'},
  {id:'ju581', type:'flight', fn:'JU581', cs:['ASL581'], label:'JU581 · Barcelona → Belgrade', date:'Jul 18', day:18, from:'BCN', to:'BEG', detail:'09:55 → 12:30 WITH mom, Miss & Rach · A220 (airBaltic crew) · €304 covers both legs.', status:'booked', fr24:'ju581'},
  {id:'ju542', type:'flight', fn:'JU542', cs:['ASL542'], label:'JU542 · Belgrade → Thessaloniki', date:'Jul 18', day:18, from:'BEG', to:'SKG', detail:'13:10 → 15:25 · A319 · 40-min connection, whole family together. Airbnb on Egnatia + the big Greek family dinner.', status:'booked', fr24:'ju542'},
- {id:'olci', type:'task', label:'Online check-ins: EK213 + Qatar + Aegean', date:'Jul 18', day:18, detail:'EK213 opens 48h out (Jul 18) — boarding pass on phone. Also Qatar 9UFOUK and Aegean 9TRXQN. Five minutes on the Airbnb wifi, then flip those pills to Checked-in.', status:'deciding'},
- {id:'a3105', type:'flight', fn:'A3105', cs:['AEE105','AEE3105'], label:'A3105 · Thessaloniki → Athens', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'07:40 → 08:35 · A320 · ref 9TRXQN · Flex (moved from 12:55 free). Leave the Airbnb ~05:45.', status:'booked', fr24:'a3105'},
- {id:'qr1', type:'flight', fn:'QR204', cs:['QTR204'], label:'QR204 · Athens → Doha', date:'Jul 19', day:19, from:'ATH', to:'DOH', detail:'13:55 → 18:15 · B787-8 · ref 9UFOUK · €405 covers both legs · 97% on-time arrivals. Starlink wifi.', status:'booked', fr24:'qr204'},
- {id:'qr2', type:'flight', fn:'QR1···', cs:[], label:'QR1··· · Doha → Dubai', date:'Jul 19', day:19, from:'DOH', to:'DXB', detail:'55-min Doha connection, lands DXB 21:30 — 4h45 before EK213 (exact flight number on your 9UFOUK e-ticket). Emirates lounge for shower + dinner.', status:'booked'},
- {id:'ek213', type:'flight', fn:'EK213', cs:['UAE213'], label:'EK213 · Dubai → Miami · BUSINESS 🛡️', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat · B777 · ref N6FHBW · reissued to Jul 20 for $0. The whole plan orbits this seat.', status:'booked', fr24:'ek213'},
+ {id:'olci', type:'task', label:'Online check-ins: EK213 + Qatar + Aegean', date:'Jul 18', day:18, detail:'EK213 opens 48h out (Jul 18) — boarding pass on phone. Also Qatar and Aegean (refs in your email). Five minutes on the Airbnb wifi, then flip those pills to Checked-in.', status:'locked'},
+ {id:'a3105', type:'flight', fn:'A3105', cs:['AEE105','AEE3105'], label:'A3105 · Thessaloniki → Athens', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'07:40 → 08:35 · A320 · Flex fare (moved from 12:55 free). Leave the Airbnb ~05:45.', status:'booked', fr24:'a3105'},
+ {id:'qr1', type:'flight', fn:'QR204', cs:['QTR204'], label:'QR204 · Athens → Doha', date:'Jul 19', day:19, from:'ATH', to:'DOH', detail:'13:55 → 18:15 · B787-8 · €405 covers both legs · 97% on-time arrivals. Starlink wifi.', status:'booked', fr24:'qr204'},
+ {id:'qr2', type:'flight', fn:'QR1···', cs:[], label:'QR1··· · Doha → Dubai', date:'Jul 19', day:19, from:'DOH', to:'DXB', detail:'55-min Doha connection, lands DXB 21:30 — 4h45 before EK213 (exact flight number on your Qatar e-ticket). Emirates lounge for shower + dinner.', status:'booked'},
+ {id:'ek213', type:'flight', fn:'EK213', cs:['UAE213'], label:'EK213 · Dubai → Miami · BUSINESS 🛡️', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat · B777 · reissued to Jul 20 for $0. The whole plan orbits this seat.', status:'booked', fr24:'ek213'},
  {id:'av397a', type:'flight', fn:'AV397', cs:['TAI397','AVA397'], label:'AV397 · Miami → Managua', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard.', status:'booked', fr24:'av397'},
  {id:'av397b', type:'flight', fn:'AV397', cs:['TAI397','AVA397'], label:'AV397 · Managua → San Salvador', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home to your girls. 💚', status:'booked', fr24:'av397'}
 ];
@@ -143,7 +143,7 @@ const FLOWN = [ {from:'SAL', to:'IAH'}, {from:'IAH', to:'DXB'} ];
 const ORDER = ['deciding','locked','booked','checkedin'];
 const LABELS = {deciding:'deciding', locked:'locked', booked:'booked', checkedin:'checked-in'};
 const COLORS = {deciding:'#8a94a3', locked:'#c99012', booked:'#2e9e63', checkedin:'#1f5f9e'};
-const KEY = 'josh-euro-trip-v4';
+const KEY = 'josh-euro-trip-v5';
 
 let saved = {};
 try{ saved = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
@@ -200,31 +200,47 @@ function renderTimeline(){
     dc.innerHTML=`<b>July ${d.d} (${d.dow}) — ${d.note}.</b> ${d.story}`; }
 }
 
+function flyTo(bounds){
+  return new Promise(res=>{
+    let done=false;
+    const finish=()=>{ if(!done){ done=true; res(); } };
+    map.once('moveend', finish);
+    setTimeout(finish, 1800); // safety
+    map.flyToBounds(bounds, {duration:1.2, padding:[40,40], easeLinearity:0.2});
+  });
+}
 async function playTour(){
   if(playing){ stopTour(); return; }
   playing=true;
   for(const d of DAYS){
     if(!playing) return;
     activeDay=d.d; render();
+    const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
+    await flyTo(b);
+    if(!playing) return;
     const legs=ITEMS.filter(it=>it.from && it.day===d.d && it.type!=='task');
-    if(legs.length===0){ await sleep(1800); continue; }
-    for(const leg of legs){ if(!playing) return; await animateLeg(leg); }
-    await sleep(700);
+    if(legs.length===0){ await sleep(1500); continue; }
+    for(const leg of legs){ if(!playing) return; await animateLeg(leg); await sleep(150); }
+    await sleep(500);
   }
   stopTour();
 }
-function stopTour(){ playing=false; activeDay=null; render(); }
+function stopTour(){ playing=false; activeDay=null; render(); map.fitBounds(allBounds); }
 function animateLeg(it){
   return new Promise(res=>{
-    const pts=gc(CITIES[it.from],CITIES[it.to],90);
+    const pts=gc(CITIES[it.from],CITIES[it.to],240);
     const mk=L.marker(pts[0],{icon:L.divIcon({html:it.type==='train'?'🚄':'✈️',className:'plane-icon',iconSize:[24,24]}),zIndexOffset:1000}).addTo(map);
-    let i=0;
-    const t=setInterval(()=>{
-      if(!playing){ clearInterval(t); map.removeLayer(mk); return res(); }
-      i+=2;
-      if(i>=pts.length){ clearInterval(t); map.removeLayer(mk); res(); }
-      else mk.setLatLng(pts[i]);
-    },22);
+    const dur = it.type==='train' ? 1100 : 1600;
+    const t0 = performance.now();
+    function step(now){
+      if(!playing){ map.removeLayer(mk); return res(); }
+      const p = Math.min(1, (now-t0)/dur);
+      const e = p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2; // ease in-out
+      mk.setLatLng(pts[Math.min(pts.length-1, Math.round(e*(pts.length-1)))]);
+      if(p<1) requestAnimationFrame(step);
+      else { map.removeLayer(mk); res(); }
+    }
+    requestAnimationFrame(step);
   });
 }
 
@@ -255,11 +271,7 @@ function render(){
       const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
       map.fitBounds(b);
     }
-  } else {
-    const d=DAYS.find(x=>x.d===activeDay);
-    if(d){ const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
-      map.flyToBounds(b,{duration:0.8}); }
-  }
+  } // during play, the camera is driven by playTour() only
 
   const list=document.getElementById('list');
   list.innerHTML = ITEMS.map(it=>{
