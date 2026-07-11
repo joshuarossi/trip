@@ -9,7 +9,7 @@
 <style>
   :root{ color-scheme: light;
     --ink:#1a2332; --muted:#5b6b7f; --line:#e3e8ef; --bg:#f6f8fb; --card:#fff;
-    --deciding:#8a94a3; --locked:#c99012; --booked:#2e9e63; --flown:#b9c4cf; --accent:#1f5f9e;
+    --deciding:#8a94a3; --locked:#c99012; --booked:#2e9e63; --checkedin:#1f5f9e; --flown:#b9c4cf; --accent:#1f5f9e;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); padding:16px; line-height:1.5;}
@@ -18,13 +18,14 @@
   .strip{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
   .chip{background:var(--card); border:1px solid var(--line); border-radius:999px; padding:5px 13px; font-size:.78rem;}
   .chip b{color:var(--booked);}
-  .timeline{display:flex; gap:5px; flex-wrap:wrap; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:9px; margin-bottom:12px;}
+  .timeline{display:flex; gap:5px; flex-wrap:wrap; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:9px; margin-bottom:12px; align-items:stretch;}
   .day{flex:1; min-width:60px; border:1px solid var(--line); background:#fbfcfe; border-radius:10px; padding:6px 3px; text-align:center; cursor:pointer; transition:all .15s;}
   .day:hover{border-color:var(--accent);}
   .day.active{background:var(--accent); border-color:var(--accent); color:#fff;}
   .day.active small{color:#dbe7f3;}
   .day b{display:block; font-size:.85rem;}
   .day small{display:block; font-size:.6rem; color:var(--muted); line-height:1.25; margin-top:2px;}
+  .playbtn{min-width:74px; border:none; background:var(--accent); color:#fff; border-radius:10px; font-weight:700; font-size:.8rem; cursor:pointer; padding:6px;}
   .daycard{background:#eef4fa; border:1px solid #c9dbec; border-radius:12px; padding:13px 15px; margin-bottom:12px; font-size:.87rem; display:none;}
   .daycard b{color:var(--accent);}
   #map{height:480px; border-radius:14px; border:1px solid var(--line); margin-bottom:8px; z-index:0;}
@@ -32,7 +33,7 @@
   .legend span{display:inline-flex; align-items:center; gap:6px;}
   .sw{width:22px; height:0; border-top:3px solid; display:inline-block; border-radius:2px;}
   .sw.d{border-top-style:dashed; border-color:var(--deciding);}
-  .sw.l{border-color:var(--locked);} .sw.b{border-color:var(--booked);} .sw.f{border-color:var(--flown);}
+  .sw.l{border-color:var(--locked);} .sw.b{border-color:var(--booked);} .sw.c{border-color:var(--checkedin);} .sw.f{border-color:var(--flown);}
   .progress{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:12px;}
   .bar{height:10px; background:#edf1f5; border-radius:999px; overflow:hidden; margin:8px 0 6px;}
   .bar i{display:block; height:100%; background:var(--booked); border-radius:999px; transition:width .3s;}
@@ -45,25 +46,28 @@
   .item .body{flex:1;}
   .item h3{font-size:.9rem; margin-bottom:2px;}
   .item p{font-size:.78rem; color:var(--muted);}
-  .pill{border:none; cursor:pointer; font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:6px 11px; border-radius:999px; color:#fff; min-width:88px;}
-  .pill.deciding{background:var(--deciding);} .pill.locked{background:var(--locked);} .pill.booked{background:var(--booked);}
+  .item .live{font-size:.72rem; margin-top:4px; color:var(--accent); font-weight:600;}
+  .item .live a{color:var(--accent);}
+  .pill{border:none; cursor:pointer; font-size:.66rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:6px 10px; border-radius:999px; color:#fff; min-width:92px;}
+  .pill.deciding{background:var(--deciding);} .pill.locked{background:var(--locked);} .pill.booked{background:var(--booked);} .pill.checkedin{background:var(--checkedin);}
   .hint{font-size:.68rem; color:var(--muted); text-align:center; margin-top:3px;}
   .foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:.74rem; color:var(--muted); flex-wrap:wrap; gap:8px;}
   .reset{background:none; border:1px solid var(--line); border-radius:8px; padding:5px 10px; font-size:.74rem; color:var(--muted); cursor:pointer;}
   .city-tip{background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-weight:700; font-size:11px; color:var(--ink); box-shadow:none;}
   .city-tip::before{display:none;}
+  .plane-icon{font-size:20px; text-shadow:0 1px 3px rgba(0,0,0,.3);}
 </style>
 </head>
 <body>
 
 <h1>✈️ Trip Control Board — Mom's 70th 🇪🇸🇬🇷</h1>
-<p class="sub">FINAL ITINERARY — all flights booked. Pick a day for that day's view, or "All". Pills cycle <b>Deciding → Locked → Booked</b> and save on this device.</p>
+<p class="sub">FINAL ITINERARY — all flights booked. Press ▶ to fly the whole route. Pills cycle <b>Deciding → Locked → Booked → Checked-in</b>. Live tracker polls adsb.lol every 90s while this page is open.</p>
 
 <div class="strip">
   <div class="chip">🏠 Home: <b>Mon Jul 20, 16:10</b></div>
   <div class="chip">✈️ Flights: <b>all 9 booked</b></div>
   <div class="chip">💰 Spent: ~$1,690 flights + ~$200 hotel</div>
-  <div class="chip">📝 Left: St Regis night · train ticket · check-in Jul 18</div>
+  <div class="chip">📝 Left: train ticket · check-ins Jul 18</div>
 </div>
 
 <div class="timeline" id="timeline"></div>
@@ -80,14 +84,15 @@
   <span><i class="sw d"></i>Deciding</span>
   <span><i class="sw l"></i>Locked</span>
   <span><i class="sw b"></i>Booked ✓</span>
-  <span><i class="sw f"></i>Already flown</span>
-  <span>🚄 dotted = train · hover a route · layers = satellite</span>
+  <span><i class="sw c"></i>Checked-in ✈️</span>
+  <span><i class="sw f"></i>Flown</span>
+  <span>🚄 dotted = train · 🛰 = live tracking</span>
 </div>
 
 <div class="list" id="list"></div>
 
 <div class="foot">
-  <span>Refs: EK MC2QCS · Aegean 9TRXQN · Qatar 9UFOUK · EK213 N6FHBW · all times local</span>
+  <span>Refs: EK MC2QCS · Aegean 9TRXQN · Qatar 9UFOUK · EK213 N6FHBW · all times local · live data: adsb.lol</span>
   <button class="reset" id="reset">Reset statuses</button>
 </div>
 
@@ -107,44 +112,46 @@ const CITIES = {
 };
 
 const ITEMS = [
- {id:'stregis', type:'task', label:'St Regis: extend night of Jul 12', date:'Jul 12', day:12, detail:'Book at the front desk (~$200–300, your card). Late checkout sorted. Leave the room ~12:15 on the 13th for EK143.', status:'locked'},
- {id:'ek143', type:'flight', label:'EK143 Dubai → Madrid ✓', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'Nonstop 14:30 → 20:20 · ref MC2QCS · $789 paid. At Dear Hotel ~21:30; Missy lands 19:15, mom & Rachel 06:50 next morning.', status:'booked'},
- {id:'train', type:'train', label:'Train Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5h, €30–60. Buy once in Madrid. Family flies 08:25; converge at the Moxy ~13:00.', status:'locked'},
- {id:'ju581', type:'flight', label:'Air Serbia JU581 Barcelona → Belgrade ✓', date:'Jul 18', day:18, from:'BCN', to:'BEG', detail:'09:55 → 12:30 WITH mom, Miss & Rach. €304 covers both legs. A220, airBaltic crew.', status:'booked'},
- {id:'ju542', type:'flight', label:'Air Serbia JU542 Belgrade → Thessaloniki ✓', date:'Jul 18', day:18, from:'BEG', to:'SKG', detail:'13:10 → 15:25, 40-min connection (whole family together). Airbnb on Egnatia + big Greek family dinner that night.', status:'booked'},
- {id:'olci', type:'task', label:'Online check-in: EK213 + Qatar + Aegean', date:'Jul 18', day:18, detail:'EK213 OLCI opens 48h out (Jul 18) — boarding pass on phone. Also check in for Qatar 9UFOUK and Aegean 9TRXQN. 5 minutes on the Airbnb wifi.', status:'deciding'},
- {id:'a3105', type:'flight', label:'Aegean A3105 Thessaloniki → Athens ✓', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'07:40 → 08:35 · ref 9TRXQN · Flex €121 (moved from 12:55 for free). Leave the Airbnb ~05:45. Sorry about the alarm clock.', status:'booked'},
- {id:'qr1', type:'flight', label:'Qatar Athens → Doha ✓', date:'Jul 19', day:19, from:'ATH', to:'DOH', detail:'13:55 departure · ref 9UFOUK · €405 covers both legs. 5h20 buffer at Athens. Starlink wifi on board.', status:'booked'},
- {id:'qr2', type:'flight', label:'Qatar Doha → Dubai ✓', date:'Jul 19', day:19, from:'DOH', to:'DXB', detail:'55-min Doha connection, lands DXB 21:30 — 4h45 before EK213. Emirates lounge (T3, airside) for shower + dinner.', status:'booked'},
- {id:'ek213', type:'flight', label:'EK213 Dubai → Miami · BUSINESS 🛡️ ✓', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat. Reissued to Jul 20 for $0 (ref N6FHBW). The whole plan orbits this seat.', status:'booked'},
- {id:'av397a', type:'flight', label:'AV397 Miami → Managua ✓', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard. Same ticket.', status:'booked'},
- {id:'av397b', type:'flight', label:'AV397 Managua → San Salvador ✓', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home to your girls. 💚', status:'booked'}
+ {id:'stregis', type:'task', label:'St Regis: extra night of Jul 12', date:'Jul 12', day:12, detail:'Reserved at the same rate, reservations merged, your card on the new night. Done. Leave the room ~12:15 on the 13th.', status:'booked'},
+ {id:'ek143', type:'flight', fn:'EK143', cs:['UAE143'], label:'EK143 · Dubai → Madrid', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'Nonstop 14:30 → 20:20 · A350 · ref MC2QCS · $789 paid. Dear Hotel ~21:30; Missy lands 19:15, mom & Rachel 06:50 next morning.', status:'booked', fr24:'ek143'},
+ {id:'train', type:'train', label:'Train · Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5h, €30–60. Buy once in Madrid. Family flies 08:25; converge at the Moxy ~13:00.', status:'locked'},
+ {id:'ju581', type:'flight', fn:'JU581', cs:['ASL581'], label:'JU581 · Barcelona → Belgrade', date:'Jul 18', day:18, from:'BCN', to:'BEG', detail:'09:55 → 12:30 WITH mom, Miss & Rach · A220 (airBaltic crew) · €304 covers both legs.', status:'booked', fr24:'ju581'},
+ {id:'ju542', type:'flight', fn:'JU542', cs:['ASL542'], label:'JU542 · Belgrade → Thessaloniki', date:'Jul 18', day:18, from:'BEG', to:'SKG', detail:'13:10 → 15:25 · A319 · 40-min connection, whole family together. Airbnb on Egnatia + the big Greek family dinner.', status:'booked', fr24:'ju542'},
+ {id:'olci', type:'task', label:'Online check-ins: EK213 + Qatar + Aegean', date:'Jul 18', day:18, detail:'EK213 opens 48h out (Jul 18) — boarding pass on phone. Also Qatar 9UFOUK and Aegean 9TRXQN. Five minutes on the Airbnb wifi, then flip those pills to Checked-in.', status:'deciding'},
+ {id:'a3105', type:'flight', fn:'A3105', cs:['AEE105','AEE3105'], label:'A3105 · Thessaloniki → Athens', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'07:40 → 08:35 · A320 · ref 9TRXQN · Flex (moved from 12:55 free). Leave the Airbnb ~05:45.', status:'booked', fr24:'a3105'},
+ {id:'qr1', type:'flight', fn:'QR204', cs:['QTR204'], label:'QR204 · Athens → Doha', date:'Jul 19', day:19, from:'ATH', to:'DOH', detail:'13:55 → 18:15 · B787-8 · ref 9UFOUK · €405 covers both legs · 97% on-time arrivals. Starlink wifi.', status:'booked', fr24:'qr204'},
+ {id:'qr2', type:'flight', fn:'QR1···', cs:[], label:'QR1··· · Doha → Dubai', date:'Jul 19', day:19, from:'DOH', to:'DXB', detail:'55-min Doha connection, lands DXB 21:30 — 4h45 before EK213 (exact flight number on your 9UFOUK e-ticket). Emirates lounge for shower + dinner.', status:'booked'},
+ {id:'ek213', type:'flight', fn:'EK213', cs:['UAE213'], label:'EK213 · Dubai → Miami · BUSINESS 🛡️', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat · B777 · ref N6FHBW · reissued to Jul 20 for $0. The whole plan orbits this seat.', status:'booked', fr24:'ek213'},
+ {id:'av397a', type:'flight', fn:'AV397', cs:['TAI397','AVA397'], label:'AV397 · Miami → Managua', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard.', status:'booked', fr24:'av397'},
+ {id:'av397b', type:'flight', fn:'AV397', cs:['TAI397','AVA397'], label:'AV397 · Managua → San Salvador', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home to your girls. 💚', status:'booked', fr24:'av397'}
 ];
 
 const DAYS = [
- {d:11, dow:'Sat', label:'Dubai', note:'Work wrap-up', story:'<b>Dubai — final work day.</b> All flights are booked. Tonight: last prospect-paid night at the St Regis.', focus:['DXB']},
- {d:12, dow:'Sun', label:'Dubai', note:'St Regis day', story:'<b>Dubai — your day off.</b> Book the extra night at the front desk (~$200–300). Pool, spa, pack light.', focus:['DXB']},
- {d:13, dow:'Mon', label:'→ Madrid', note:'EK143 14:30', story:'<b>Fly day.</b> Leave the room ~12:15, EK143 nonstop 14:30 → 20:20. Dear Hotel by ~21:30 — Missy landed 19:15 and is already at the bar. 🍷', focus:['DXB','MAD']},
- {d:14, dow:'Tue', label:'Madrid', note:'Mom lands 06:50', story:'<b>Madrid.</b> Mom & Rachel land 06:50. Retiro, Palacio de Cristal, 6pm flamenco at Coral de la Morería. The birthday trip is ON.', focus:['MAD']},
- {d:15, dow:'Wed', label:'Madrid', note:'Prado day', story:'<b>Madrid.</b> Plaza Mayor, the Prado, Templo de Debod at sunset. Buy the train ticket for tomorrow if you haven\'t.', focus:['MAD']},
- {d:16, dow:'Thu', label:'→ Barcelona', note:'Train ~09:00', story:'<b>Train day.</b> Family flies 08:25; you take the fast train Atocha → Sants. Sagrada Família 15:30, Paradiso cocktails after.', focus:['MAD','BCN']},
+ {d:11, dow:'Sat', label:'Dubai', note:'Work wrap-up', story:'<b>Dubai — final work day.</b> All flights booked. Last prospect-paid night at the St Regis.', focus:['DXB']},
+ {d:12, dow:'Sun', label:'Dubai', note:'St Regis day', story:'<b>Dubai — your day off.</b> Extra night sorted at the same rate. Pool, spa, pack light.', focus:['DXB']},
+ {d:13, dow:'Mon', label:'→ Madrid', note:'EK143 14:30', story:'<b>Fly day.</b> EK143 nonstop 14:30 → 20:20. Dear Hotel ~21:30 — Missy landed 19:15 and is already at the bar. 🍷', focus:['DXB','MAD']},
+ {d:14, dow:'Tue', label:'Madrid', note:'Mom lands 06:50', story:'<b>Madrid.</b> Mom & Rachel land 06:50. Retiro, Palacio de Cristal, 6pm flamenco at Coral de la Morería.', focus:['MAD']},
+ {d:15, dow:'Wed', label:'Madrid', note:'Prado day', story:'<b>Madrid.</b> Plaza Mayor, the Prado, Templo de Debod at sunset. Buy tomorrow\'s train ticket.', focus:['MAD']},
+ {d:16, dow:'Thu', label:'→ Barcelona', note:'Train ~09:00', story:'<b>Train day.</b> Family flies 08:25; you take the fast train Atocha → Sants. Sagrada Família 15:30.', focus:['MAD','BCN']},
  {d:17, dow:'Fri', label:'Barcelona', note:'Park Güell', story:'<b>Barcelona.</b> Park Güell 10:00, Sips 19:00/21:00. Last full Spain day with the whole crew.', focus:['BCN']},
- {d:18, dow:'Sat', label:'→ Thessaloniki', note:'JU581 09:55', story:'<b>Greece day — with the family the whole way.</b> Air Serbia via Belgrade, 09:55 → 15:25. Airbnb on Egnatia, big family dinner with the Greek cousins. 📱 Tonight: online check-in for EK213, Qatar and Aegean.', focus:['BCN','BEG','SKG']},
- {d:19, dow:'Sun', label:'The long way home', note:'05:45 start', story:'<b>Travel day, four flights of it.</b> Aegean 07:40 → Athens 08:35. Qatar 13:55 via Doha → Dubai 21:30. Emirates lounge shower + dinner, then EK213 at 02:15. You sleep flat over the Atlantic.', focus:['SKG','ATH','DOH','DXB']},
- {d:20, dow:'Mon', label:'→ Home 🏠', note:'SAL 16:10', story:'<b>Home day.</b> Miami 10:00, AV397 13:45 via a short Managua stop, San Salvador 16:10. Hug your girls. 💚', focus:['DXB','MIA','SAL']}
+ {d:18, dow:'Sat', label:'→ Thessaloniki', note:'JU581 09:55', story:'<b>Greece day — with the family the whole way.</b> JU581 + JU542 via Belgrade, 09:55 → 15:25. Big family dinner with the Greek cousins. 📱 Tonight: all three online check-ins.', focus:['BCN','BEG','SKG']},
+ {d:19, dow:'Sun', label:'The long way home', note:'05:45 start', story:'<b>Travel day, four flights of it.</b> A3105 07:40 → Athens. QR204 13:55 → Doha → Dubai 21:30. Emirates lounge, then EK213 at 02:15.', focus:['SKG','ATH','DOH','DXB']},
+ {d:20, dow:'Mon', label:'→ Home 🏠', note:'SAL 16:10', story:'<b>Home day.</b> Miami 10:00, AV397 13:45 via Managua, San Salvador 16:10. Hug your girls. 💚', focus:['DXB','MIA','SAL']}
 ];
 
 const FLOWN = [ {from:'SAL', to:'IAH'}, {from:'IAH', to:'DXB'} ];
-const ORDER = ['deciding','locked','booked'];
-const COLORS = {deciding:'#8a94a3', locked:'#c99012', booked:'#2e9e63'};
-const KEY = 'josh-euro-trip-v3';
+const ORDER = ['deciding','locked','booked','checkedin'];
+const LABELS = {deciding:'deciding', locked:'locked', booked:'booked', checkedin:'checked-in'};
+const COLORS = {deciding:'#8a94a3', locked:'#c99012', booked:'#2e9e63', checkedin:'#1f5f9e'};
+const KEY = 'josh-euro-trip-v4';
 
 let saved = {};
 try{ saved = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
 ITEMS.forEach(it => { if(saved[it.id]) it.status = saved[it.id]; });
-let activeDay = null;
+let activeDay = null, playing=false;
 
 function save(){ const o={}; ITEMS.forEach(it=>o[it.id]=it.status); localStorage.setItem(KEY, JSON.stringify(o)); }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 function gc(a, b, n=64){
   const toR=Math.PI/180, toD=180/Math.PI;
@@ -179,16 +186,46 @@ const allBounds = L.latLngBounds(Object.values(CITIES).map(c=>[c.lat,c.lon])).pa
 
 function renderTimeline(){
   const tl=document.getElementById('timeline');
-  let html = `<div class="day ${activeDay===null?'active':''}" data-day="all"><b>All</b><small>whole trip</small></div>`;
+  let html = `<button class="playbtn" id="playBtn">${playing?'⏸ Stop':'▶ Play'}</button>`;
+  html += `<div class="day ${activeDay===null?'active':''}" data-day="all"><b>All</b><small>whole trip</small></div>`;
   DAYS.forEach(d=>{ html+=`<div class="day ${activeDay===d.d?'active':''}" data-day="${d.d}"><b>${d.d}</b><small>${d.dow}<br>${d.label}</small></div>`; });
   tl.innerHTML=html;
+  document.getElementById('playBtn').onclick=playTour;
   tl.querySelectorAll('.day').forEach(el=>{
-    el.onclick=()=>{ activeDay = el.dataset.day==='all' ? null : +el.dataset.day; render(); };
+    el.onclick=()=>{ if(playing) stopTour(); activeDay = el.dataset.day==='all' ? null : +el.dataset.day; render(); };
   });
   const dc=document.getElementById('daycard');
   if(activeDay===null){ dc.style.display='none'; }
   else{ const d=DAYS.find(x=>x.d===activeDay); dc.style.display='block';
     dc.innerHTML=`<b>July ${d.d} (${d.dow}) — ${d.note}.</b> ${d.story}`; }
+}
+
+async function playTour(){
+  if(playing){ stopTour(); return; }
+  playing=true;
+  for(const d of DAYS){
+    if(!playing) return;
+    activeDay=d.d; render();
+    const legs=ITEMS.filter(it=>it.from && it.day===d.d && it.type!=='task');
+    if(legs.length===0){ await sleep(1800); continue; }
+    for(const leg of legs){ if(!playing) return; await animateLeg(leg); }
+    await sleep(700);
+  }
+  stopTour();
+}
+function stopTour(){ playing=false; activeDay=null; render(); }
+function animateLeg(it){
+  return new Promise(res=>{
+    const pts=gc(CITIES[it.from],CITIES[it.to],90);
+    const mk=L.marker(pts[0],{icon:L.divIcon({html:it.type==='train'?'🚄':'✈️',className:'plane-icon',iconSize:[24,24]}),zIndexOffset:1000}).addTo(map);
+    let i=0;
+    const t=setInterval(()=>{
+      if(!playing){ clearInterval(t); map.removeLayer(mk); return res(); }
+      i+=2;
+      if(i>=pts.length){ clearInterval(t); map.removeLayer(mk); res(); }
+      else mk.setLatLng(pts[i]);
+    },22);
+  });
 }
 
 function render(){
@@ -205,45 +242,87 @@ function render(){
       color:COLORS[it.status], weight:4, opacity:faded?0.12:0.95,
       dashArray: it.status==='deciding' ? '8 8' : (it.type==='train' ? '2 8' : null)
     }).addTo(routeLayer);
-    line.bindTooltip(`${it.type==='train'?'🚄':'✈️'} <b>${it.label}</b><br>${it.date} — ${it.status}`,{sticky:true});
+    line.bindTooltip(`${it.type==='train'?'🚄':'✈️'} <b>${it.label}</b><br>${it.date} — ${LABELS[it.status]}`,{sticky:true});
     line.on('click',()=>{ const el=document.getElementById('item-'+it.id);
       el.scrollIntoView({behavior:'smooth', block:'center'});
       el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1600); });
   });
 
-  if(activeDay===null){ map.fitBounds(allBounds); }
-  else{
+  if(!playing){
+    if(activeDay===null){ map.fitBounds(allBounds); }
+    else{
+      const d=DAYS.find(x=>x.d===activeDay);
+      const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
+      map.fitBounds(b);
+    }
+  } else {
     const d=DAYS.find(x=>x.d===activeDay);
-    const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
-    map.fitBounds(b);
+    if(d){ const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
+      map.flyToBounds(b,{duration:0.8}); }
   }
 
   const list=document.getElementById('list');
   list.innerHTML = ITEMS.map(it=>{
     const dim = activeDay!==null && it.day!==activeDay;
+    const live = (it.cs&&it.cs.length) ? `<p class="live" id="live-${it.id}">🛰 checking live status…</p>` : '';
+    const trk = it.fr24 ? ` · <a href="https://www.flightradar24.com/data/flights/${it.fr24}" target="_blank" rel="noopener">track on FR24</a>` : '';
     return `
     <div class="item ${dim?'dim':''}" id="item-${it.id}">
       <div class="date">${it.date}</div>
-      <div class="body"><h3>${it.type==='train'?'🚄 ':it.type==='task'?'📝 ':'✈️ '}${it.label}</h3><p>${it.detail}</p></div>
-      <div><button class="pill ${it.status}" data-id="${it.id}">${it.status}</button><div class="hint">click to cycle</div></div>
+      <div class="body"><h3>${it.type==='train'?'🚄 ':it.type==='task'?'📝 ':'✈️ '}${it.label}</h3><p>${it.detail}${trk}</p>${live}</div>
+      <div><button class="pill ${it.status}" data-id="${it.id}">${LABELS[it.status]}</button><div class="hint">click to cycle</div></div>
     </div>`; }).join('');
   list.querySelectorAll('.pill').forEach(btn=>{
     btn.onclick=()=>{ const it=ITEMS.find(i=>i.id===btn.dataset.id);
-      it.status=ORDER[(ORDER.indexOf(it.status)+1)%3]; save(); render(); };
+      it.status=ORDER[(ORDER.indexOf(it.status)+1)%ORDER.length]; save(); render(); checkFlights(); };
   });
 
-  const booked=ITEMS.filter(i=>i.status==='booked').length;
-  document.getElementById('progLabel').textContent=`${booked} / ${ITEMS.length} done`;
-  document.getElementById('progPct').textContent=Math.round(booked/ITEMS.length*100)+'%';
-  document.getElementById('progBar').style.width=(booked/ITEMS.length*100)+'%';
-  const open=ITEMS.filter(i=>i.status!=='booked');
+  const done=ITEMS.filter(i=>i.status==='booked'||i.status==='checkedin').length;
+  document.getElementById('progLabel').textContent=`${done} / ${ITEMS.length} done`;
+  document.getElementById('progPct').textContent=Math.round(done/ITEMS.length*100)+'%';
+  document.getElementById('progBar').style.width=(done/ITEMS.length*100)+'%';
+  const open=ITEMS.filter(i=>i.status!=='booked'&&i.status!=='checkedin');
   document.getElementById('remains').innerHTML = open.length===0
     ? '🎉 Everything done. Enjoy the trip — home July 20, 16:10.'
-    : '<b>Still open:</b> ' + open.map(i=>`${i.label} <span style="opacity:.65">(${i.status})</span>`).join(' · ');
+    : '<b>Still open:</b> ' + open.map(i=>`${i.label} <span style="opacity:.65">(${LABELS[i.status]})</span>`).join(' · ');
 }
+
+// ---- live flight status (adsb.lol, keyless, CORS-open; polls while page open) ----
+let liveMarkers = {};
+async function checkFlights(){
+  for(const it of ITEMS){
+    if(!it.cs || !it.cs.length) continue;
+    const el=document.getElementById('live-'+it.id);
+    if(!el) continue;
+    let found=null;
+    for(const cs of it.cs){
+      try{
+        const r=await fetch('https://api.adsb.lol/v2/callsign/'+cs, {cache:'no-store'});
+        if(!r.ok) continue;
+        const j=await r.json();
+        if(j.ac && j.ac.length){ found={cs, ac:j.ac[0]}; break; }
+      }catch(e){}
+    }
+    if(found){
+      const alt = found.ac.alt_baro==='ground' ? 'on the ground' : `${Math.round(found.ac.alt_baro||0).toLocaleString()} ft`;
+      const spd = found.ac.gs ? ` · ${Math.round(found.ac.gs)} kt` : '';
+      el.innerHTML = `🛰 <b>LIVE</b> — ${found.cs} airborne now: ${alt}${spd}`;
+      if(found.ac.lat && found.ac.lon){
+        if(liveMarkers[it.id]) map.removeLayer(liveMarkers[it.id]);
+        liveMarkers[it.id]=L.marker([found.ac.lat,found.ac.lon],{icon:L.divIcon({html:'🛩️',className:'plane-icon',iconSize:[22,22]}),zIndexOffset:1200})
+          .addTo(map).bindTooltip(`${it.fn} — live position`);
+      }
+    } else {
+      el.textContent = `🛰 ${it.fn}: no live signal right now (not airborne, or out of coverage)`;
+      if(liveMarkers[it.id]){ map.removeLayer(liveMarkers[it.id]); delete liveMarkers[it.id]; }
+    }
+  }
+}
+setInterval(checkFlights, 90000);
 
 document.getElementById('reset').onclick=()=>{ if(confirm('Reset all statuses to the plan defaults?')){ localStorage.removeItem(KEY); location.reload(); } };
 render();
+checkFlights();
 </script>
 </body>
 </html>
