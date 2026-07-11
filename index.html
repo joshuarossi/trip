@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Control Board — Mom's 70th</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>
+  :root{ color-scheme: light;
+    --ink:#1a2332; --muted:#5b6b7f; --line:#e3e8ef; --bg:#f6f8fb; --card:#fff;
+    --deciding:#8a94a3; --locked:#c99012; --booked:#2e9e63; --flown:#b9c4cf; --accent:#1f5f9e;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); padding:16px; line-height:1.5;}
+  h1{font-size:1.25rem; letter-spacing:-.01em;}
+  .sub{color:var(--muted); font-size:.85rem; margin:2px 0 12px;}
+  .strip{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .chip{background:var(--card); border:1px solid var(--line); border-radius:999px; padding:5px 13px; font-size:.78rem;}
+  .chip b{color:var(--booked);}
+  .timeline{display:flex; gap:5px; flex-wrap:wrap; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:9px; margin-bottom:12px;}
+  .day{flex:1; min-width:60px; border:1px solid var(--line); background:#fbfcfe; border-radius:10px; padding:6px 3px; text-align:center; cursor:pointer; transition:all .15s;}
+  .day:hover{border-color:var(--accent);}
+  .day.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .day.active small{color:#dbe7f3;}
+  .day b{display:block; font-size:.85rem;}
+  .day small{display:block; font-size:.6rem; color:var(--muted); line-height:1.25; margin-top:2px;}
+  .daycard{background:#eef4fa; border:1px solid #c9dbec; border-radius:12px; padding:13px 15px; margin-bottom:12px; font-size:.87rem; display:none;}
+  .daycard b{color:var(--accent);}
+  #map{height:480px; border-radius:14px; border:1px solid var(--line); margin-bottom:8px; z-index:0;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; padding:2px 4px 10px; font-size:.74rem; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .sw{width:22px; height:0; border-top:3px solid; display:inline-block; border-radius:2px;}
+  .sw.d{border-top-style:dashed; border-color:var(--deciding);}
+  .sw.l{border-color:var(--locked);} .sw.b{border-color:var(--booked);} .sw.f{border-color:var(--flown);}
+  .progress{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:12px;}
+  .bar{height:10px; background:#edf1f5; border-radius:999px; overflow:hidden; margin:8px 0 6px;}
+  .bar i{display:block; height:100%; background:var(--booked); border-radius:999px; transition:width .3s;}
+  .remains{font-size:.84rem; color:var(--muted);}
+  .list{display:grid; gap:8px;}
+  .item{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:flex; gap:12px; align-items:flex-start; transition:box-shadow .2s, opacity .2s;}
+  .item.dim{opacity:.35;}
+  .item.flash{box-shadow:0 0 0 3px rgba(201,144,18,.35);}
+  .item .date{min-width:50px; font-size:.7rem; font-weight:700; color:var(--muted); text-transform:uppercase; padding-top:3px;}
+  .item .body{flex:1;}
+  .item h3{font-size:.9rem; margin-bottom:2px;}
+  .item p{font-size:.78rem; color:var(--muted);}
+  .pill{border:none; cursor:pointer; font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:6px 11px; border-radius:999px; color:#fff; min-width:88px;}
+  .pill.deciding{background:var(--deciding);} .pill.locked{background:var(--locked);} .pill.booked{background:var(--booked);}
+  .hint{font-size:.68rem; color:var(--muted); text-align:center; margin-top:3px;}
+  .foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:.74rem; color:var(--muted); flex-wrap:wrap; gap:8px;}
+  .reset{background:none; border:1px solid var(--line); border-radius:8px; padding:5px 10px; font-size:.74rem; color:var(--muted); cursor:pointer;}
+  .city-tip{background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-weight:700; font-size:11px; color:var(--ink); box-shadow:none;}
+  .city-tip::before{display:none;}
+</style>
+</head>
+<body>
+
+<h1>✈️ Trip Control Board — Mom's 70th 🇪🇸🇬🇷</h1>
+<p class="sub">Dubai → Madrid → Barcelona → Thessaloniki → home. Pick a day for that day's view, or "All". Click a status pill to cycle <b>Deciding → Locked → Booked</b>. Saves automatically on this device.</p>
+
+<div class="strip">
+  <div class="chip">🏠 Home: <b>Mon Jul 20, 16:10</b></div>
+  <div class="chip">🛡️ EK213 Business: <b>$0 change</b></div>
+  <div class="chip">💰 Remaining spend: ~$1,300–1,900</div>
+  <div class="chip">📞 Fallback: 2nd change $300+diff</div>
+</div>
+
+<div class="timeline" id="timeline"></div>
+<div class="daycard" id="daycard"></div>
+
+<div class="progress">
+  <div style="display:flex; justify-content:space-between; font-size:.85rem;"><b id="progLabel"></b><span id="progPct" style="color:var(--muted);"></span></div>
+  <div class="bar"><i id="progBar" style="width:0%"></i></div>
+  <div class="remains" id="remains"></div>
+</div>
+
+<div id="map"></div>
+<div class="legend">
+  <span><i class="sw d"></i>Deciding</span>
+  <span><i class="sw l"></i>Locked</span>
+  <span><i class="sw b"></i>Booked ✓</span>
+  <span><i class="sw f"></i>Already flown</span>
+  <span>🚄 dotted = train · hover a route for details · layers button = satellite</span>
+</div>
+
+<div class="list" id="list"></div>
+
+<div class="foot">
+  <span>EK213/AV397 reissued Jul 9 for $0 · ref N6FHBW · times local</span>
+  <button class="reset" id="reset">Reset statuses</button>
+</div>
+
+<script>
+const CITIES = {
+  SAL:{lat:13.699, lon:-89.191, name:"San Salvador 🏠"},
+  MGA:{lat:12.141, lon:-86.168, name:"Managua (stop)"},
+  MIA:{lat:25.795, lon:-80.29,  name:"Miami"},
+  IAH:{lat:29.99,  lon:-95.34,  name:"Houston"},
+  MAD:{lat:40.472, lon:-3.561,  name:"Madrid"},
+  BCN:{lat:41.297, lon:2.078,   name:"Barcelona"},
+  SKG:{lat:40.52,  lon:22.97,   name:"Thessaloniki"},
+  ATH:{lat:37.936, lon:23.947,  name:"Athens"},
+  DXB:{lat:25.253, lon:55.365,  name:"Dubai"}
+};
+
+const ITEMS = [
+ {id:'sisters', type:'task', label:'Text sisters: flight # + bed space', date:'NOW', day:11, detail:'Get the BCN→SKG flight number (Jul 18, 09:55→15:25) and confirm bed space at Dear Hotel Madrid + Moxy Barcelona.', status:'deciding'},
+ {id:'stregis', type:'task', label:'St Regis: extend night of Jul 12', date:'Jul 12', day:12, detail:'Your card, ~$250–350 (July = Dubai low season). Book at the front desk. Leave the room ~12:15 on the 13th for EK143.', status:'locked'},
+ {id:'ek143', type:'flight', label:'EK143 Dubai → Madrid (nonstop)', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'14:30 → 20:20, ~$550–850. Book on emirates.com TODAY — fare rises daily. Add Skywards #. At Dear Hotel ~21:30; Missy lands 19:15.', status:'locked'},
+ {id:'train', type:'train', label:'Train Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5–3h, €30–60. Family flies 08:25; everyone converges on the Moxy by ~13:00.', status:'locked'},
+ {id:'bcnskg', type:'flight', label:'Barcelona → Thessaloniki (with family)', date:'Jul 18', day:18, from:'BCN', to:'SKG', detail:'Family departs 09:55 → 15:25 (~$150–280). Waiting on flight number from sisters. Big Greek family dinner that night.', status:'deciding'},
+ {id:'olci', type:'task', label:'Online check-in EK213 + PNR-link call', date:'Jul 18', day:18, detail:'OLCI opens 48h out. Boarding pass on phone = seamless T3 transfer. Fallbacks: EK counter at ATH, or T3 transfer desk. Ask EK to note the EK210 arrival on the EK213 booking.', status:'deciding'},
+ {id:'skgath', type:'flight', label:'Aegean Thessaloniki → Athens', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'~13:00–14:00 hop, 55 min, ~$50–90. Full Thessaloniki morning first (Bex & Will land 10:30). 3–4h buffer at ATH; ~10 backup frequencies.', status:'locked'},
+ {id:'ek210', type:'flight', label:'EK210 Athens → Dubai', date:'Jul 19', day:19, from:'ATH', to:'DXB', detail:'18:05 → 23:35 (~$300–500). ~97% on-time arrivals. Rule: if projected arrival slips past 01:00, call EK before 02:15 and move EK213 ($300+diff). Lounge shower on landing.', status:'locked'},
+ {id:'ek213', type:'flight', label:'EK213 Dubai → Miami · BUSINESS 🛡️', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat. Reissued to Jul 20 for $0 ✓. Greece-extension option: $300 + fare diff, decide by ~Jul 15.', status:'booked'},
+ {id:'av397a', type:'flight', label:'AV397 Miami → Managua', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard. Same ticket ✓.', status:'booked'},
+ {id:'av397b', type:'flight', label:'AV397 Managua → San Salvador', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home! 💚', status:'booked'}
+];
+
+const DAYS = [
+ {d:11, dow:'Sat', label:'Dubai', note:'Work wrap-up', story:'<b>Dubai — final work day.</b> Booking day: EK143, EK210 + Aegean hop, and text the sisters. Tonight: last prospect-paid night at the St Regis.', focus:['DXB']},
+ {d:12, dow:'Sun', label:'Dubai', note:'St Regis day', story:'<b>Dubai — your day off.</b> The extended St Regis night (your card). Pool, spa, pack light. Nothing to catch until tomorrow afternoon.', focus:['DXB']},
+ {d:13, dow:'Mon', label:'→ Madrid', note:'EK143 14:30', story:'<b>Fly day.</b> Leave the room ~12:15, EK143 nonstop 14:30 → 20:20. Taxi to Dear Hotel Madrid (Gran Vía) by ~21:30 — Missy landed 19:15 and is already there. 🍷', focus:['DXB','MAD']},
+ {d:14, dow:'Tue', label:'Madrid', note:'Mom lands 06:50', story:'<b>Madrid.</b> Mom & Rachel land 06:50 after the overnight from DC. Retiro, Palacio de Cristal, and the 6pm flamenco show at Coral de la Morería. The birthday trip is ON.', focus:['MAD']},
+ {d:15, dow:'Wed', label:'Madrid', note:'Prado day', story:'<b>Madrid.</b> Plaza Mayor, the Prado, Templo de Debod at sunset. ⏰ Quiet deadline: if the Greece extension is calling, check the EK Saver fare and decide today-ish ($300 + diff).', focus:['MAD']},
+ {d:16, dow:'Thu', label:'→ Barcelona', note:'Train ~09:00', story:'<b>Train day.</b> Family flies 08:25; you take the ~09:00 fast train Atocha → Sants (2.5h). Everyone converges on the Moxy. Sagrada Família tour 15:30, Paradiso cocktails after.', focus:['MAD','BCN']},
+ {d:17, dow:'Fri', label:'Barcelona', note:'Park Güell', story:'<b>Barcelona.</b> Park Güell at 10:00, Sips reservations at 19:00/21:00. Last full Spain day with the whole crew.', focus:['BCN']},
+ {d:18, dow:'Sat', label:'→ Thessaloniki', note:'09:55 w/ family', story:'<b>Greece day.</b> Fly with mom, Miss & Rach 09:55 → 15:25. Airbnb on Egnatia, then the big family dinner with the Greek cousins. 📱 EK213 online check-in opens today — do it + the PNR-link call.', focus:['BCN','SKG']},
+ {d:19, dow:'Sun', label:'SKG→ATH→DXB', note:'The greedy exit', story:'<b>The long goodbye.</b> Morning with everyone (Bex & Will land 10:30), lunch, then the ~13:30 hop to Athens. EK210 18:05 → DXB 23:35. Emirates lounge: shower + dinner. If EK210 slips badly: call EK <i>before</i> 02:15.', focus:['SKG','ATH','DXB']},
+ {d:20, dow:'Mon', label:'→ Home 🏠', note:'EK213 02:15', story:'<b>Home day.</b> EK213 lie-flat 02:15 → Miami 10:00. AV397 13:45 → San Salvador 16:10, via a short Managua stop. Hug your girls. 💚', focus:['DXB','MIA','SAL']}
+];
+
+const FLOWN = [ {from:'SAL', to:'IAH'}, {from:'IAH', to:'DXB'} ];
+const ORDER = ['deciding','locked','booked'];
+const COLORS = {deciding:'#8a94a3', locked:'#c99012', booked:'#2e9e63'};
+const KEY = 'josh-euro-trip-v2';
+
+let saved = {};
+try{ saved = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
+ITEMS.forEach(it => { if(saved[it.id]) it.status = saved[it.id]; });
+let activeDay = null;
+
+function save(){ const o={}; ITEMS.forEach(it=>o[it.id]=it.status); localStorage.setItem(KEY, JSON.stringify(o)); }
+
+function gc(a, b, n=64){
+  const toR=Math.PI/180, toD=180/Math.PI;
+  const f1=a.lat*toR, l1=a.lon*toR, f2=b.lat*toR, l2=b.lon*toR;
+  const d=2*Math.asin(Math.sqrt(Math.sin((f2-f1)/2)**2 + Math.cos(f1)*Math.cos(f2)*Math.sin((l2-l1)/2)**2));
+  if(d===0) return [[a.lat,a.lon],[b.lat,b.lon]];
+  const pts=[];
+  for(let i=0;i<=n;i++){
+    const f=i/n, A=Math.sin((1-f)*d)/Math.sin(d), B=Math.sin(f*d)/Math.sin(d);
+    const x=A*Math.cos(f1)*Math.cos(l1)+B*Math.cos(f2)*Math.cos(l2);
+    const y=A*Math.cos(f1)*Math.sin(l1)+B*Math.cos(f2)*Math.sin(l2);
+    const z=A*Math.sin(f1)+B*Math.sin(f2);
+    pts.push([Math.atan2(z,Math.hypot(x,y))*toD, Math.atan2(y,x)*toD]);
+  }
+  return pts;
+}
+
+const map = L.map('map', {worldCopyJump:true, scrollWheelZoom:true});
+const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'});
+const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:18, attribution:'Tiles &copy; Esri'});
+voyager.addTo(map);
+L.control.layers({'Map':voyager, 'Satellite 🌍':sat}, {}, {position:'topright'}).addTo(map);
+
+for(const [code,c] of Object.entries(CITIES)){
+  const m=L.circleMarker([c.lat,c.lon],{radius:6, color:'#1a2332', weight:2.5, fillColor:'#fff', fillOpacity:1}).addTo(map);
+  m.bindTooltip(c.name,{permanent:true, direction: code==='ATH'||code==='MGA'?'bottom':'top', offset:[0, code==='ATH'||code==='MGA'?8:-8], className:'city-tip'});
+}
+
+const routeLayer = L.layerGroup().addTo(map);
+const allBounds = L.latLngBounds(Object.values(CITIES).map(c=>[c.lat,c.lon])).pad(0.12);
+
+function renderTimeline(){
+  const tl=document.getElementById('timeline');
+  let html = `<div class="day ${activeDay===null?'active':''}" data-day="all"><b>All</b><small>whole trip</small></div>`;
+  DAYS.forEach(d=>{ html+=`<div class="day ${activeDay===d.d?'active':''}" data-day="${d.d}"><b>${d.d}</b><small>${d.dow}<br>${d.label}</small></div>`; });
+  tl.innerHTML=html;
+  tl.querySelectorAll('.day').forEach(el=>{
+    el.onclick=()=>{ activeDay = el.dataset.day==='all' ? null : +el.dataset.day; render(); };
+  });
+  const dc=document.getElementById('daycard');
+  if(activeDay===null){ dc.style.display='none'; }
+  else{ const d=DAYS.find(x=>x.d===activeDay); dc.style.display='block';
+    dc.innerHTML=`<b>July ${d.d} (${d.dow}) — ${d.note}.</b> ${d.story}`; }
+}
+
+function render(){
+  renderTimeline();
+  routeLayer.clearLayers();
+
+  FLOWN.forEach(f=>{
+    L.polyline(gc(CITIES[f.from],CITIES[f.to]),{color:'#b9c4cf', weight:3, opacity:activeDay===null?0.8:0.15}).addTo(routeLayer);
+  });
+
+  ITEMS.filter(it=>it.from).forEach(it=>{
+    const faded = activeDay!==null && it.day!==activeDay;
+    const line=L.polyline(gc(CITIES[it.from],CITIES[it.to]),{
+      color:COLORS[it.status], weight:4, opacity:faded?0.12:0.95,
+      dashArray: it.status==='deciding' ? '8 8' : (it.type==='train' ? '2 8' : null)
+    }).addTo(routeLayer);
+    line.bindTooltip(`${it.type==='train'?'🚄':'✈️'} <b>${it.label}</b><br>${it.date} — ${it.status}${it.status==='booked'?' ✓':''}`,{sticky:true});
+    line.on('click',()=>{ const el=document.getElementById('item-'+it.id);
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+      el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1600); });
+  });
+
+  if(activeDay===null){ map.fitBounds(allBounds); }
+  else{
+    const d=DAYS.find(x=>x.d===activeDay);
+    const b=L.latLngBounds(d.focus.map(c=>[CITIES[c].lat, CITIES[c].lon])).pad(d.focus.length===1?2.5:0.35);
+    map.fitBounds(b);
+  }
+
+  const list=document.getElementById('list');
+  list.innerHTML = ITEMS.map(it=>{
+    const dim = activeDay!==null && it.day!==activeDay;
+    return `
+    <div class="item ${dim?'dim':''}" id="item-${it.id}">
+      <div class="date">${it.date}</div>
+      <div class="body"><h3>${it.type==='train'?'🚄 ':it.type==='task'?'📝 ':'✈️ '}${it.label}</h3><p>${it.detail}</p></div>
+      <div><button class="pill ${it.status}" data-id="${it.id}">${it.status}</button><div class="hint">click to cycle</div></div>
+    </div>`; }).join('');
+  list.querySelectorAll('.pill').forEach(btn=>{
+    btn.onclick=()=>{ const it=ITEMS.find(i=>i.id===btn.dataset.id);
+      it.status=ORDER[(ORDER.indexOf(it.status)+1)%3]; save(); render(); };
+  });
+
+  const booked=ITEMS.filter(i=>i.status==='booked').length;
+  document.getElementById('progLabel').textContent=`${booked} / ${ITEMS.length} booked`;
+  document.getElementById('progPct').textContent=Math.round(booked/ITEMS.length*100)+'%';
+  document.getElementById('progBar').style.width=(booked/ITEMS.length*100)+'%';
+  const open=ITEMS.filter(i=>i.status!=='booked');
+  document.getElementById('remains').innerHTML = open.length===0
+    ? '🎉 Everything booked. Go enjoy the trip — see you July 20.'
+    : '<b>Still open:</b> ' + open.map(i=>`${i.label} <span style="opacity:.65">(${i.status})</span>`).join(' · ');
+}
+
+document.getElementById('reset').onclick=()=>{ if(confirm('Reset all statuses to the plan defaults?')){ localStorage.removeItem(KEY); location.reload(); } };
+render();
+</script>
+</body>
+</html>
