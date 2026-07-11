@@ -57,13 +57,13 @@
 <body>
 
 <h1>✈️ Trip Control Board — Mom's 70th 🇪🇸🇬🇷</h1>
-<p class="sub">Dubai → Madrid → Barcelona → Thessaloniki → home. Pick a day for that day's view, or "All". Click a status pill to cycle <b>Deciding → Locked → Booked</b>. Saves automatically on this device.</p>
+<p class="sub">FINAL ITINERARY — all flights booked. Pick a day for that day's view, or "All". Pills cycle <b>Deciding → Locked → Booked</b> and save on this device.</p>
 
 <div class="strip">
   <div class="chip">🏠 Home: <b>Mon Jul 20, 16:10</b></div>
-  <div class="chip">🛡️ EK213 Business: <b>$0 change</b></div>
-  <div class="chip">💰 Remaining spend: ~$1,300–1,900</div>
-  <div class="chip">📞 Fallback: 2nd change $300+diff</div>
+  <div class="chip">✈️ Flights: <b>all 9 booked</b></div>
+  <div class="chip">💰 Spent: ~$1,690 flights + ~$200 hotel</div>
+  <div class="chip">📝 Left: St Regis night · train ticket · check-in Jul 18</div>
 </div>
 
 <div class="timeline" id="timeline"></div>
@@ -81,13 +81,13 @@
   <span><i class="sw l"></i>Locked</span>
   <span><i class="sw b"></i>Booked ✓</span>
   <span><i class="sw f"></i>Already flown</span>
-  <span>🚄 dotted = train · hover a route for details · layers button = satellite</span>
+  <span>🚄 dotted = train · hover a route · layers = satellite</span>
 </div>
 
 <div class="list" id="list"></div>
 
 <div class="foot">
-  <span>EK213/AV397 reissued Jul 9 for $0 · ref N6FHBW · times local</span>
+  <span>Refs: EK MC2QCS · Aegean 9TRXQN · Qatar 9UFOUK · EK213 N6FHBW · all times local</span>
   <button class="reset" id="reset">Reset statuses</button>
 </div>
 
@@ -99,42 +99,45 @@ const CITIES = {
   IAH:{lat:29.99,  lon:-95.34,  name:"Houston"},
   MAD:{lat:40.472, lon:-3.561,  name:"Madrid"},
   BCN:{lat:41.297, lon:2.078,   name:"Barcelona"},
+  BEG:{lat:44.818, lon:20.309,  name:"Belgrade (stop)"},
   SKG:{lat:40.52,  lon:22.97,   name:"Thessaloniki"},
   ATH:{lat:37.936, lon:23.947,  name:"Athens"},
+  DOH:{lat:25.273, lon:51.608,  name:"Doha (stop)"},
   DXB:{lat:25.253, lon:55.365,  name:"Dubai"}
 };
 
 const ITEMS = [
- {id:'sisters', type:'task', label:'Text sisters: flight # + bed space', date:'NOW', day:11, detail:'Get the BCN→SKG flight number (Jul 18, 09:55→15:25) and confirm bed space at Dear Hotel Madrid + Moxy Barcelona.', status:'deciding'},
- {id:'stregis', type:'task', label:'St Regis: extend night of Jul 12', date:'Jul 12', day:12, detail:'Your card, ~$250–350 (July = Dubai low season). Book at the front desk. Leave the room ~12:15 on the 13th for EK143.', status:'locked'},
- {id:'ek143', type:'flight', label:'EK143 Dubai → Madrid (nonstop)', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'14:30 → 20:20, ~$550–850. Book on emirates.com TODAY — fare rises daily. Add Skywards #. At Dear Hotel ~21:30; Missy lands 19:15.', status:'locked'},
- {id:'train', type:'train', label:'Train Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5–3h, €30–60. Family flies 08:25; everyone converges on the Moxy by ~13:00.', status:'locked'},
- {id:'bcnskg', type:'flight', label:'Barcelona → Thessaloniki (with family)', date:'Jul 18', day:18, from:'BCN', to:'SKG', detail:'Family departs 09:55 → 15:25 (~$150–280). Waiting on flight number from sisters. Big Greek family dinner that night.', status:'deciding'},
- {id:'olci', type:'task', label:'Online check-in EK213 + PNR-link call', date:'Jul 18', day:18, detail:'OLCI opens 48h out. Boarding pass on phone = seamless T3 transfer. Fallbacks: EK counter at ATH, or T3 transfer desk. Ask EK to note the EK210 arrival on the EK213 booking.', status:'deciding'},
- {id:'skgath', type:'flight', label:'Aegean Thessaloniki → Athens', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'~13:00–14:00 hop, 55 min, ~$50–90. Full Thessaloniki morning first (Bex & Will land 10:30). 3–4h buffer at ATH; ~10 backup frequencies.', status:'locked'},
- {id:'ek210', type:'flight', label:'EK210 Athens → Dubai', date:'Jul 19', day:19, from:'ATH', to:'DXB', detail:'18:05 → 23:35 (~$300–500). ~97% on-time arrivals. Rule: if projected arrival slips past 01:00, call EK before 02:15 and move EK213 ($300+diff). Lounge shower on landing.', status:'locked'},
- {id:'ek213', type:'flight', label:'EK213 Dubai → Miami · BUSINESS 🛡️', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat. Reissued to Jul 20 for $0 ✓. Greece-extension option: $300 + fare diff, decide by ~Jul 15.', status:'booked'},
- {id:'av397a', type:'flight', label:'AV397 Miami → Managua', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard. Same ticket ✓.', status:'booked'},
- {id:'av397b', type:'flight', label:'AV397 Managua → San Salvador', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home! 💚', status:'booked'}
+ {id:'stregis', type:'task', label:'St Regis: extend night of Jul 12', date:'Jul 12', day:12, detail:'Book at the front desk (~$200–300, your card). Late checkout sorted. Leave the room ~12:15 on the 13th for EK143.', status:'locked'},
+ {id:'ek143', type:'flight', label:'EK143 Dubai → Madrid ✓', date:'Jul 13', day:13, from:'DXB', to:'MAD', detail:'Nonstop 14:30 → 20:20 · ref MC2QCS · $789 paid. At Dear Hotel ~21:30; Missy lands 19:15, mom & Rachel 06:50 next morning.', status:'booked'},
+ {id:'train', type:'train', label:'Train Madrid → Barcelona', date:'Jul 16', day:16, from:'MAD', to:'BCN', detail:'Ouigo / Iryo / AVE ~09:00, Atocha → Sants 2.5h, €30–60. Buy once in Madrid. Family flies 08:25; converge at the Moxy ~13:00.', status:'locked'},
+ {id:'ju581', type:'flight', label:'Air Serbia JU581 Barcelona → Belgrade ✓', date:'Jul 18', day:18, from:'BCN', to:'BEG', detail:'09:55 → 12:30 WITH mom, Miss & Rach. €304 covers both legs. A220, airBaltic crew.', status:'booked'},
+ {id:'ju542', type:'flight', label:'Air Serbia JU542 Belgrade → Thessaloniki ✓', date:'Jul 18', day:18, from:'BEG', to:'SKG', detail:'13:10 → 15:25, 40-min connection (whole family together). Airbnb on Egnatia + big Greek family dinner that night.', status:'booked'},
+ {id:'olci', type:'task', label:'Online check-in: EK213 + Qatar + Aegean', date:'Jul 18', day:18, detail:'EK213 OLCI opens 48h out (Jul 18) — boarding pass on phone. Also check in for Qatar 9UFOUK and Aegean 9TRXQN. 5 minutes on the Airbnb wifi.', status:'deciding'},
+ {id:'a3105', type:'flight', label:'Aegean A3105 Thessaloniki → Athens ✓', date:'Jul 19', day:19, from:'SKG', to:'ATH', detail:'07:40 → 08:35 · ref 9TRXQN · Flex €121 (moved from 12:55 for free). Leave the Airbnb ~05:45. Sorry about the alarm clock.', status:'booked'},
+ {id:'qr1', type:'flight', label:'Qatar Athens → Doha ✓', date:'Jul 19', day:19, from:'ATH', to:'DOH', detail:'13:55 departure · ref 9UFOUK · €405 covers both legs. 5h20 buffer at Athens. Starlink wifi on board.', status:'booked'},
+ {id:'qr2', type:'flight', label:'Qatar Doha → Dubai ✓', date:'Jul 19', day:19, from:'DOH', to:'DXB', detail:'55-min Doha connection, lands DXB 21:30 — 4h45 before EK213. Emirates lounge (T3, airside) for shower + dinner.', status:'booked'},
+ {id:'ek213', type:'flight', label:'EK213 Dubai → Miami · BUSINESS 🛡️ ✓', date:'Jul 20', day:20, from:'DXB', to:'MIA', detail:'02:15 → 10:00, lie-flat. Reissued to Jul 20 for $0 (ref N6FHBW). The whole plan orbits this seat.', status:'booked'},
+ {id:'av397a', type:'flight', label:'AV397 Miami → Managua ✓', date:'Jul 20', day:20, from:'MIA', to:'MGA', detail:'13:45 departure, short stop in Managua — same plane, stay aboard. Same ticket.', status:'booked'},
+ {id:'av397b', type:'flight', label:'AV397 Managua → San Salvador ✓', date:'Jul 20', day:20, from:'MGA', to:'SAL', detail:'Final hop — San Salvador 16:10. Home to your girls. 💚', status:'booked'}
 ];
 
 const DAYS = [
- {d:11, dow:'Sat', label:'Dubai', note:'Work wrap-up', story:'<b>Dubai — final work day.</b> Booking day: EK143, EK210 + Aegean hop, and text the sisters. Tonight: last prospect-paid night at the St Regis.', focus:['DXB']},
- {d:12, dow:'Sun', label:'Dubai', note:'St Regis day', story:'<b>Dubai — your day off.</b> The extended St Regis night (your card). Pool, spa, pack light. Nothing to catch until tomorrow afternoon.', focus:['DXB']},
- {d:13, dow:'Mon', label:'→ Madrid', note:'EK143 14:30', story:'<b>Fly day.</b> Leave the room ~12:15, EK143 nonstop 14:30 → 20:20. Taxi to Dear Hotel Madrid (Gran Vía) by ~21:30 — Missy landed 19:15 and is already there. 🍷', focus:['DXB','MAD']},
- {d:14, dow:'Tue', label:'Madrid', note:'Mom lands 06:50', story:'<b>Madrid.</b> Mom & Rachel land 06:50 after the overnight from DC. Retiro, Palacio de Cristal, and the 6pm flamenco show at Coral de la Morería. The birthday trip is ON.', focus:['MAD']},
- {d:15, dow:'Wed', label:'Madrid', note:'Prado day', story:'<b>Madrid.</b> Plaza Mayor, the Prado, Templo de Debod at sunset. ⏰ Quiet deadline: if the Greece extension is calling, check the EK Saver fare and decide today-ish ($300 + diff).', focus:['MAD']},
- {d:16, dow:'Thu', label:'→ Barcelona', note:'Train ~09:00', story:'<b>Train day.</b> Family flies 08:25; you take the ~09:00 fast train Atocha → Sants (2.5h). Everyone converges on the Moxy. Sagrada Família tour 15:30, Paradiso cocktails after.', focus:['MAD','BCN']},
- {d:17, dow:'Fri', label:'Barcelona', note:'Park Güell', story:'<b>Barcelona.</b> Park Güell at 10:00, Sips reservations at 19:00/21:00. Last full Spain day with the whole crew.', focus:['BCN']},
- {d:18, dow:'Sat', label:'→ Thessaloniki', note:'09:55 w/ family', story:'<b>Greece day.</b> Fly with mom, Miss & Rach 09:55 → 15:25. Airbnb on Egnatia, then the big family dinner with the Greek cousins. 📱 EK213 online check-in opens today — do it + the PNR-link call.', focus:['BCN','SKG']},
- {d:19, dow:'Sun', label:'SKG→ATH→DXB', note:'The greedy exit', story:'<b>The long goodbye.</b> Morning with everyone (Bex & Will land 10:30), lunch, then the ~13:30 hop to Athens. EK210 18:05 → DXB 23:35. Emirates lounge: shower + dinner. If EK210 slips badly: call EK <i>before</i> 02:15.', focus:['SKG','ATH','DXB']},
- {d:20, dow:'Mon', label:'→ Home 🏠', note:'EK213 02:15', story:'<b>Home day.</b> EK213 lie-flat 02:15 → Miami 10:00. AV397 13:45 → San Salvador 16:10, via a short Managua stop. Hug your girls. 💚', focus:['DXB','MIA','SAL']}
+ {d:11, dow:'Sat', label:'Dubai', note:'Work wrap-up', story:'<b>Dubai — final work day.</b> All flights are booked. Tonight: last prospect-paid night at the St Regis.', focus:['DXB']},
+ {d:12, dow:'Sun', label:'Dubai', note:'St Regis day', story:'<b>Dubai — your day off.</b> Book the extra night at the front desk (~$200–300). Pool, spa, pack light.', focus:['DXB']},
+ {d:13, dow:'Mon', label:'→ Madrid', note:'EK143 14:30', story:'<b>Fly day.</b> Leave the room ~12:15, EK143 nonstop 14:30 → 20:20. Dear Hotel by ~21:30 — Missy landed 19:15 and is already at the bar. 🍷', focus:['DXB','MAD']},
+ {d:14, dow:'Tue', label:'Madrid', note:'Mom lands 06:50', story:'<b>Madrid.</b> Mom & Rachel land 06:50. Retiro, Palacio de Cristal, 6pm flamenco at Coral de la Morería. The birthday trip is ON.', focus:['MAD']},
+ {d:15, dow:'Wed', label:'Madrid', note:'Prado day', story:'<b>Madrid.</b> Plaza Mayor, the Prado, Templo de Debod at sunset. Buy the train ticket for tomorrow if you haven\'t.', focus:['MAD']},
+ {d:16, dow:'Thu', label:'→ Barcelona', note:'Train ~09:00', story:'<b>Train day.</b> Family flies 08:25; you take the fast train Atocha → Sants. Sagrada Família 15:30, Paradiso cocktails after.', focus:['MAD','BCN']},
+ {d:17, dow:'Fri', label:'Barcelona', note:'Park Güell', story:'<b>Barcelona.</b> Park Güell 10:00, Sips 19:00/21:00. Last full Spain day with the whole crew.', focus:['BCN']},
+ {d:18, dow:'Sat', label:'→ Thessaloniki', note:'JU581 09:55', story:'<b>Greece day — with the family the whole way.</b> Air Serbia via Belgrade, 09:55 → 15:25. Airbnb on Egnatia, big family dinner with the Greek cousins. 📱 Tonight: online check-in for EK213, Qatar and Aegean.', focus:['BCN','BEG','SKG']},
+ {d:19, dow:'Sun', label:'The long way home', note:'05:45 start', story:'<b>Travel day, four flights of it.</b> Aegean 07:40 → Athens 08:35. Qatar 13:55 via Doha → Dubai 21:30. Emirates lounge shower + dinner, then EK213 at 02:15. You sleep flat over the Atlantic.', focus:['SKG','ATH','DOH','DXB']},
+ {d:20, dow:'Mon', label:'→ Home 🏠', note:'SAL 16:10', story:'<b>Home day.</b> Miami 10:00, AV397 13:45 via a short Managua stop, San Salvador 16:10. Hug your girls. 💚', focus:['DXB','MIA','SAL']}
 ];
 
 const FLOWN = [ {from:'SAL', to:'IAH'}, {from:'IAH', to:'DXB'} ];
 const ORDER = ['deciding','locked','booked'];
 const COLORS = {deciding:'#8a94a3', locked:'#c99012', booked:'#2e9e63'};
-const KEY = 'josh-euro-trip-v2';
+const KEY = 'josh-euro-trip-v3';
 
 let saved = {};
 try{ saved = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
@@ -167,7 +170,8 @@ L.control.layers({'Map':voyager, 'Satellite 🌍':sat}, {}, {position:'topright'
 
 for(const [code,c] of Object.entries(CITIES)){
   const m=L.circleMarker([c.lat,c.lon],{radius:6, color:'#1a2332', weight:2.5, fillColor:'#fff', fillOpacity:1}).addTo(map);
-  m.bindTooltip(c.name,{permanent:true, direction: code==='ATH'||code==='MGA'?'bottom':'top', offset:[0, code==='ATH'||code==='MGA'?8:-8], className:'city-tip'});
+  const below = ['ATH','MGA','BEG','DOH'].includes(code);
+  m.bindTooltip(c.name,{permanent:true, direction: below?'bottom':'top', offset:[0, below?8:-8], className:'city-tip'});
 }
 
 const routeLayer = L.layerGroup().addTo(map);
@@ -201,7 +205,7 @@ function render(){
       color:COLORS[it.status], weight:4, opacity:faded?0.12:0.95,
       dashArray: it.status==='deciding' ? '8 8' : (it.type==='train' ? '2 8' : null)
     }).addTo(routeLayer);
-    line.bindTooltip(`${it.type==='train'?'🚄':'✈️'} <b>${it.label}</b><br>${it.date} — ${it.status}${it.status==='booked'?' ✓':''}`,{sticky:true});
+    line.bindTooltip(`${it.type==='train'?'🚄':'✈️'} <b>${it.label}</b><br>${it.date} — ${it.status}`,{sticky:true});
     line.on('click',()=>{ const el=document.getElementById('item-'+it.id);
       el.scrollIntoView({behavior:'smooth', block:'center'});
       el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1600); });
@@ -229,12 +233,12 @@ function render(){
   });
 
   const booked=ITEMS.filter(i=>i.status==='booked').length;
-  document.getElementById('progLabel').textContent=`${booked} / ${ITEMS.length} booked`;
+  document.getElementById('progLabel').textContent=`${booked} / ${ITEMS.length} done`;
   document.getElementById('progPct').textContent=Math.round(booked/ITEMS.length*100)+'%';
   document.getElementById('progBar').style.width=(booked/ITEMS.length*100)+'%';
   const open=ITEMS.filter(i=>i.status!=='booked');
   document.getElementById('remains').innerHTML = open.length===0
-    ? '🎉 Everything booked. Go enjoy the trip — see you July 20.'
+    ? '🎉 Everything done. Enjoy the trip — home July 20, 16:10.'
     : '<b>Still open:</b> ' + open.map(i=>`${i.label} <span style="opacity:.65">(${i.status})</span>`).join(' · ');
 }
 
